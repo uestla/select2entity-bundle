@@ -54,17 +54,22 @@ class Select2EntityType extends AbstractType
 
         // add custom data transformer
         if ($options['transformer']) {
-            if (!is_string($options['transformer'])) {
-                throw new \Exception('The option transformer must be a string');
-            }
-            if (!class_exists($options['transformer'])) {
-                throw new \Exception('Unable to load class: '.$options['transformer']);
-            }
+            if (is_string($options['transformer'])) {
+                if (!class_exists($options['transformer'])) {
+                    throw new \Exception('Unable to load class: '.$options['transformer']);
+                }
 
-            $transformer = new $options['transformer']($this->em, $options['class'], $options['text_property'], $options['primary_key']);
+                $transformer = new $options['transformer']($this->em, $options['class'], $options['text_property'], $options['primary_key']);
 
-            if (!$transformer instanceof DataTransformerInterface) {
-                throw new \Exception(sprintf('The custom transformer %s must implement "Symfony\Component\Form\DataTransformerInterface"', get_class($transformer)));
+                if (!$transformer instanceof DataTransformerInterface) {
+                    throw new \Exception(sprintf('The custom transformer %s must implement "%s"', get_class($transformer), DataTransformerInterface::class));
+                }
+
+            } elseif ($options['transformer'] instanceof DataTransformerInterface) {
+                $transformer = $optons['transformer'];
+
+            } else {
+                throw new \Exception(sprtinf('The option transformer must be either a string or an instance of "%s"', DataTransformerInterface::class));
             }
 
             // add the default data transformer
